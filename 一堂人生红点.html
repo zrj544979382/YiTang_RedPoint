@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一堂人生红点</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            position: relative;
+        }
+
+        .logo::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .nav {
+            margin-left: auto;
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #666;
+            font-size: 16px;
+            padding: 10px 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav a:hover,
+        .nav a.active {
+            color: #e74c3c;
+            border-bottom-color: #e74c3c;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border: 3px solid #e74c3c;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.2);
+        }
+
+        .card-header {
+            background-color: #e74c3c;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .card-circle {
+            width: 120px;
+            height: 120px;
+            background-color: #f8d7da;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #721c24;
+        }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-feature {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .card-feature h4 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .card-feature p {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .card-dot {
+            width: 20px;
+            height: 20px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            margin: 0 auto;
+            opacity: 0.7;
+        }
+
+        .tooltip {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #333;
+        }
+
+        .card:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background: white;
+            border: 4px solid #e74c3c;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.7);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 30px;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #e74c3c;
+        }
+
+        .modal-header {
+            background-color: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .modal-circle {
+            width: 180px;
+            height: 180px;
+            background-color: #f8d7da;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #721c24;
+        }
+
+        .modal-feature {
+            text-align: left;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .modal-feature h4 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .modal-feature p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .modal-dot {
+            width: 30px;
+            height: 30px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            margin: 20px auto 0;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 1024px) {
+            .cards-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .nav {
+                margin-left: 0;
+                margin-top: 20px;
+            }
+
+            .modal-card {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+
+            .modal-circle {
+                width: 150px;
+                height: 150px;
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"></div>
+        <div>
+            <span class="title">人生红点</span>
+            <span class="subtitle">抽一张牌，看见未来的你</span>
+        </div>
+        <nav class="nav">
+            <a href="#" class="active">首页</a>
+            <a href="#">认知中心</a>
+            <a href="#">诊断空间</a>
+            <a href="#">规划工坊</a>
+            <a href="#">个人中心</a>
+        </nav>
+    </div>
+
+    <div class="cards-container">
+        <div class="card" onclick="handleCardClick('生活型', '我希望家庭美满幸福，生活稳定有序有幸福感', '世上最美的风景是世上最平凡的生活')">
+            <div class="tooltip">生活型</div>
+            <div class="card-header">人生红点模型</div>
+            <div class="card-circle">生活型</div>
+            <div class="card-content">
+                <div class="card-feature">
+                    <h4>典型特点：</h4>
+                    <p>我希望家庭美满幸福，生活稳定有序有幸福感</p>
+                </div>
+                <div class="card-feature">
+                    <h4>信念信条：</h4>
+                    <p>世上最美的风景是世上最平凡的生活</p>
+                </div>
+                <div class="card-dot"></div>
+            </div>
+        </div>
+
+        <div class="card" onclick="handleCardClick('体验型', '我希望过丰富多彩的人生，接触都带着新鲜的经历，人生多层面的探索', '经历越多，千越多，人生面越通')">
+            <div class="tooltip">体验型</div>
+            <div class="card-header">人生红点模型</div>
+            <div class="card-circle">体验型</div>
+            <div class="card-content">
+                <div class="card-feature">
+                    <h4>典型特点：</h4>
+                    <p>我希望过丰富多彩的人生，接触都带着新鲜的经历，人生多层面的探索</p>
+                </div>
+                <div class="card-feature">
+                    <h4>信念信条：</h4>
+                    <p>经历越多，千越多，人生面越通</p>
+                </div>
+                <div class="card-dot"></div>
+            </div>
+        </div>
+
+        <div class="card" onclick="handleCardClick('过程型', '我希望和一群特别有意思的人合作，团队上的共鸣感很重要', '团队中的参与感，是最安心的幸福')">
+            <div class="tooltip">过程型</div>
+            <div class="card-header">人生红点模型</div>
+            <div class="card-circle">过程型</div>
+            <div class="card-content">
+                <div class="card-feature">
+                    <h4>典型特点：</h4>
+                    <p>我希望和一群特别有意思的人合作，团队上的共鸣感很重要</p>
+                </div>
+                <div class="card-feature">
+                    <h4>信念信条：</h4>
+                    <p>团队中的参与感，是最安心的幸福</p>
+                </div>
+                <div class="card-dot"></div>
+            </div>
+        </div>
+
+        <div class="card" onclick="handleCardClick('内心型', '我希望不断学习认识世界的本质', '明心道，辨死可矣')">
+            <div class="tooltip">内心型</div>
+            <div class="card-header">人生红点模型</div>
+            <div class="card-circle">内心型</div>
+            <div class="card-content">
+                <div class="card-feature">
+                    <h4>典型特点：</h4>
+                    <p>我希望不断学习认识世界的本质</p>
+                </div>
+                <div class="card-feature">
+                    <h4>信念信条：</h4>
+                    <p>明心道，辨死可矣</p>
+                </div>
+                <div class="card-dot"></div>
+            </div>
+        </div>
+
+        <div class="card" onclick="handleCardClick('高手型', '我希望不断成长自我认知，成为某个匠人精神，精益求精', '匠人精神，精益求精')">
+            <div class="tooltip">高手型</div>
+            <div class="card-header">人生红点模型</div>
+            <div class="card-circle">高手型</div>
+            <div class="card-content">
+                <div class="card-feature">
+                    <h4>典型特点：</h4>
+                    <p>我希望不断成长自我认知，成为某个匠人精神，精益求精</p>
+                </div>
+                <div class="card-feature">
+                    <h4>信念信条：</h4>
+                    <p>匠人精神，精益求精</p>
+                </div>
+                <div class="card-dot"></div>
+            </div>
+        </div>
+
+        <div class="card" onclick="handleCardClick('赚钱型', '我希望赚很多很多钱，小康民族金字塔工', '人生没钱就低人一等')">
+            <div class="tooltip">赚钱型</div>
+            <div class="card-header">人生红点模型</div>
+            <div class="card-circle">赚钱型</div>
+            <div class="card-content">
+                <div class="card-feature">
+                    <h4>典型特点：</h4>
+                    <p>我希望赚很多很多钱，小康民族金字塔工</p>
+                </div>
+                <div class="card-feature">
+                    <h4>信念信条：</h4>
+                    <p>人生没钱就低人一等</p>
+                </div>
+                <div class="card-dot"></div>
+            </div>
+        </div>
+
+        <div class="card" onclick="handleCardClick('出名型', '我希望当代明有非常好的名声，很高的知名度，受人喜爱', '出名要趁早')">
+            <div class="tooltip">出名型</div>
+            <div class="card-header">人生红点模型</div>
+            <div class="card-circle">出名型</div>
+            <div class="card-content">
+                <div class="card-feature">
+                    <h4>典型特点：</h4>
+                    <p>我希望当代明有非常好的名声，很高的知名度，受人喜爱</p>
+                </div>
+                <div class="card-feature">
+                    <h4>信念信条：</h4>
+                    <p>出名要趁早</p>
+                </div>
+                <div class="card-dot"></div>
+            </div>
+        </div>
+
+        <div class="card" onclick="handleCardClick('作品型', '我希望做出一个优秀的作品，可以影响很多年', '用作品证明我来过这个世界')">
+            <div class="tooltip">作品型</div>
+            <div class="card-header">人生红点模型</div>
+            <div class="card-circle">作品型</div>
+            <div class="card-content">
+                <div class="card-feature">
+                    <h4>典型特点：</h4>
+                    <p>我希望做出一个优秀的作品，可以影响很多年</p>
+                </div>
+                <div class="card-feature">
+                    <h4>信念信条：</h4>
+                    <p>用作品证明我来过这个世界</p>
+                </div>
+                <div class="card-dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗模态框 -->
+    <div class="modal-overlay" id="cardModal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-header" id="modalHeader">人生红点模型</div>
+            <div class="modal-circle" id="modalCircle"></div>
+            <div class="modal-feature">
+                <h4>典型特点：</h4>
+                <p id="modalFeature"></p>
+            </div>
+            <div class="modal-feature">
+                <h4>信念信条：</h4>
+                <p id="modalBelief"></p>
+            </div>
+            <div class="modal-dot"></div>
+        </div>
+    </div>
+
+    <script>
+        function handleCardClick(cardType, feature, belief) {
+            console.log('点击了卡片：' + cardType);
+            
+            // 更新弹窗内容
+            document.getElementById('modalCircle').textContent = cardType;
+            document.getElementById('modalFeature').textContent = feature;
+            document.getElementById('modalBelief').textContent = belief;
+            
+            // 显示弹窗
+            document.getElementById('cardModal').classList.add('active');
+            
+            // 阻止页面滚动
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            // 隐藏弹窗
+            document.getElementById('cardModal').classList.remove('active');
+            
+            // 恢复页面滚动
+            document.body.style.overflow = 'auto';
+        }
+
+        // 点击弹窗背景关闭弹窗
+        document.getElementById('cardModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // ESC键关闭弹窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // 添加键盘导航支持
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const focusedCard = document.activeElement;
+                if (focusedCard.classList.contains('card')) {
+                    focusedCard.click();
+                }
+            }
+        });
+
+        // 为卡片添加键盘焦点支持
+        document.querySelectorAll('.card').forEach(card => {
+            card.setAttribute('tabindex', '0');
+        });
+    </script>
+</body>
+</html>
